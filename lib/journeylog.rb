@@ -9,6 +9,7 @@ attr_reader :journey_history, :journey_instance, :incomplete_journey
   end
 
   def start_journey(entry_station)
+    register_journey(nil) if journey_instance != nil
     instantiate_new_journey
     current_journey(entry_station)
     self.journey_instance.register_entry_station(entry_station)
@@ -31,7 +32,7 @@ attr_reader :journey_history, :journey_instance, :incomplete_journey
   attr_accessor :journey_klass
 
   def current_journey(entry_station)
-      return self.journey_instance = journey_klass.new if journey_instance == nil
+      #return self.journey_instance = journey_klass.new if journey_instance == nil
       @incomplete_journey = entry_station
   end
 
