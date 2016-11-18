@@ -3,9 +3,15 @@ require 'journey'
 describe Journey do
 subject(:journey) { described_class.new }
 let(:entry_station) {double :entry_station}
+let(:exit_station) {double :exit_station}
 
-  it "has an empty journey history by default" do
-    expect(journey.journey_history).to eq ([])
+  it "entry station is nil by default" do
+    expect(journey.entry_station).to eq nil
+  end
+
+
+  it "exit station is nil by default" do
+    expect(journey.exit_station).to eq nil
   end
 
   it "registers if the journey started" do
@@ -13,15 +19,20 @@ let(:entry_station) {double :entry_station}
     expect(journey.ongoing?).to eq true
   end
 
-  it "remembers one journey" do
-      journey.register_entry_station(:entry_station)
-      journey.register_journey(:exit_station)
-    expect(journey.journey_history).to eq ([{:entry_station=>:exit_station}])
+  it "registers exit station" do
+    journey.register_exit_station(:exit_station)
+    expect(journey.exit_station).to eq :exit_station
   end
 
-  it "registers if the journey ended" do
+  it "is calculates minimum fare for complete journeys" do
     journey.register_entry_station(:entry_station)
-    journey.forget_entry_station
-    expect(journey.ongoing?).to eq false
+    journey.register_exit_station(:exit_station)
+    expect(journey.fare).to eq Journey::MINIMUM_FARE
   end
+
+  it "is calculates penalty fare for incomplete journeys" do
+    journey.register_entry_station(:entry_station)
+    expect(journey.fare).to eq Journey::PENALTY_FARE
+  end
+
 end

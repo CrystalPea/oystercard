@@ -1,6 +1,7 @@
 require './lib/station'
 
 describe Station do
+  #subject(:station) {described_class.new}
   let(:station_name) {double :station_name}
   let(:zone1) {double :zone1}
 

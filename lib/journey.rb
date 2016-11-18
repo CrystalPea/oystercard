@@ -1,29 +1,40 @@
 class Journey
+  MINIMUM_FARE = 1
+  PENALTY_FARE = 6
 
-  attr_reader :journey_history, :entry_station
+  attr_reader :entry_station, :exit_station
 
   def initialize
     @entry_station = nil
-    @journey_history = []
+    @exit_station = nil
   end
 
   def ongoing?
     !!entry_station
   end
 
-  def register_entry_station(station)
-    self.entry_station = station
+  def register_entry_station(entry_station)
+    self.entry_station = entry_station
   end
 
-  def register_journey(exit_station)
-    self.journey_history << {entry_station=>exit_station}
+  def register_exit_station(exit_station)
+    self.exit_station = exit_station
   end
 
   def forget_entry_station
     self.entry_station = nil
   end
 
+  def forget_exit_station
+    self.exit_station = nil
+  end
+
+  def fare
+    return PENALTY_FARE unless ongoing? && !!exit_station
+    MINIMUM_FARE
+  end
+
   private
-  attr_writer :journey_history, :entry_station
+  attr_writer :entry_station, :exit_station
 
 end

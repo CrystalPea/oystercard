@@ -19,6 +19,24 @@ describe OysterCard do
     let(:entry_station) {double :entry_station}
     let(:exit_station) {double :exit_station}
 
+    it "has an empty journey history by default" do
+      expect(oystercard.journey_history).to eq ([])
+    end
+
+    it "instantiates new journey on touch in" do
+      oystercard.top_up(10)
+      oystercard.touch_in(:entry_station)
+      expect(oystercard.journey_instance).not_to be nil
+    end
+
+    it "remembers multiple journeys" do
+        oystercard.top_up(10)
+        5.times { oystercard.touch_in(:entry_station)
+        oystercard.touch_out(:exit_station) }
+      expect(oystercard.journey_history).to eq ([{:entry_station=>:exit_station}, {:entry_station=>:exit_station},
+        {:entry_station=>:exit_station}, {:entry_station=>:exit_station}, {:entry_station=>:exit_station}])
+    end
+
     describe "#touch_in" do
 
       it "refuses to let you touch in unless the balance is at least £#{OysterCard::MINIMUM_LIMIT}" do
@@ -30,20 +48,21 @@ describe OysterCard do
     it "charges penalty fare if user forgot to touch out" do
       oystercard.top_up(10)
       oystercard.touch_in(:entry_station)
-      expect{oystercard.touch_in(:entry_station)}.to change{oystercard.balance}.by(-OysterCard::PENALTY_FARE)
+      expect{oystercard.touch_in(:entry_station)}.to change{oystercard.balance}
     end
 
-    describe "#touch_out" do
+    it "registers an incomplete journey if user forgot to touch in" do
+      oystercard.top_up(10)
+      oystercard.touch_in(:entry_station)
+      oystercard.touch_in(:entry_station)
+      expect(oystercard.journey_history).to eq ([{:entry_station=>nil}])
+    end
 
-      it "deducts a fare on completion of a journey" do
+
+      it "deducts a fare on touch out" do
         oystercard.top_up(10)
         oystercard.touch_in(:entry_station)
-        expect {oystercard.touch_out(:exit_station)}.to change{oystercard.balance}.by(-OysterCard::MINIMUM_FARE)
-      end
-
-      it "charges penalty fare if user forgot to touch in" do
-        oystercard.top_up(10)
-        expect{oystercard.touch_out(:exit_station)}.to change{oystercard.balance}.by(-OysterCard::PENALTY_FARE)
+        expect {oystercard.touch_out(:exit_station)}.to change{oystercard.balance}
       end
     end
   end
