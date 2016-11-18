@@ -21,20 +21,16 @@ class Journey
     self.exit_station = exit_station
   end
 
-  def forget_entry_station
-    self.entry_station = nil
-  end
-
-  def forget_exit_station
-    self.exit_station = nil
-  end
-
   def fare
-    return PENALTY_FARE unless ongoing? && !!exit_station
+    return PENALTY_FARE unless complete?
     MINIMUM_FARE
   end
 
   private
   attr_writer :entry_station, :exit_station
+
+  def complete?
+  !!entry_station && !!exit_station
+  end
 
 end

@@ -1,14 +1,14 @@
-require_relative './journey'
+require_relative './journeylog'
 
 class OysterCard
   MAXIMUM_LIMIT = 90
   MINIMUM_LIMIT = 1
-  attr_reader :balance, :journey_instance, :journey_history, :journey_klass
+  attr_reader :balance
+  attr_accessor :journeylog_klass
 
-  def initialize(journey)
+  def initialize(journey, journeylog)
+    @journeylog_klass = journeylog.new(journey)
     @balance = 0
-    @journey_klass = journey
-    @journey_history = []
   end
 
   def top_up(value)
@@ -19,35 +19,21 @@ class OysterCard
 
   def touch_in(entry_station)
     raise "Error: Insufficient balance, please top up." if insufficient_funds?
-    if (journey_instance != nil) && !!(self.journey_instance.entry_station)
-      deduct(journey_instance.fare)
-      register_journey(nil)
+    if (self.journeylog_klass.journey_instance != nil) && !!(self.journeylog_klass.incomplete_journey)
+      self.journeylog_klass.register_journey(nil)
+      deduct((self.journeylog_klass.journey_history.last)[:fare])
     end
-    instantiate_new_journey
-    self.journey_instance.register_entry_station(entry_station)
+    self.journeylog_klass.start_journey(entry_station)
   end
 
   def touch_out(exit_station)
-    instantiate_new_journey if journey_instance == nil
-    self.journey_instance.register_exit_station(exit_station)
-    deduct(self.journey_instance.fare)
-    register_journey(exit_station)
-    self.journey_instance = nil
+    self.journeylog_klass.register_journey(exit_station)
+    deduct((self.journeylog_klass.journey_history.last)[:fare])
   end
-
-  def instantiate_new_journey
-    @journey_instance = journey_klass.new
-  end
-
-
 
   private
 
-  attr_writer :balance, :journey_history, :journey_instance, :journey_klass
-
-  def register_journey(exit_station)
-    self.journey_history << {self.journey_instance.entry_station=>exit_station}
-  end
+  attr_writer :balance
 
   def limit_exceeded?(value)
     self.balance + value > MAXIMUM_LIMIT
